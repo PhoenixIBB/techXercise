@@ -1,4 +1,4 @@
-package com.application.techxercise;
+package com.application.techXercise;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
