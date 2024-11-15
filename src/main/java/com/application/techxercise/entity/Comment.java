@@ -2,7 +2,7 @@ package com.application.techXercise.entity;
 
 import jakarta.persistence.*;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 import java.util.Objects;
 
 @Entity
@@ -26,19 +26,19 @@ public class Comment {
     private Task commentedTask;
 
     @Column(name = "commentCreationDate")
-    private LocalDateTime commentCreationDate;
+    private LocalDate commentCreationDate;
 
     @PrePersist
     public void prePersist() {
         if (this.commentCreationDate == null) {
-            this.commentCreationDate = LocalDateTime.now();
+            this.commentCreationDate = LocalDate.now();
         }
     }
 
     public Comment() {
     }
 
-    public Comment(long id, String content, User commenter, Task commentedTask, LocalDateTime commentCreationDate) {
+    public Comment(long id, String content, User commenter, Task commentedTask, LocalDate commentCreationDate) {
         this.id = id;
         this.content = content;
         this.commenter = commenter;
@@ -78,11 +78,11 @@ public class Comment {
         this.commentedTask = commentedTask;
     }
 
-    public LocalDateTime getCommentCreationDate() {
+    public LocalDate getCommentCreationDate() {
         return commentCreationDate;
     }
 
-    public void setCommentCreationDate(LocalDateTime commentCreationDate) {
+    public void setCommentCreationDate(LocalDate commentCreationDate) {
         this.commentCreationDate = commentCreationDate;
     }
 
