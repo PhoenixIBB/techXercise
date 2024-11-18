@@ -7,7 +7,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "comments")
-public class Comment {
+public class CommentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -19,11 +19,11 @@ public class Comment {
 
     @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH }, fetch = FetchType.LAZY)
     @JoinColumn(name = "commenter_id")
-    private User commenter;
+    private UserEntity commenter;
 
     @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH }, fetch = FetchType.LAZY)
     @JoinColumn(name = "commentedTask_id")
-    private Task commentedTask;
+    private TaskEntity commentedTaskEntity;
 
     @Column(name = "commentCreationDate")
     private LocalDate commentCreationDate;
@@ -35,14 +35,14 @@ public class Comment {
         }
     }
 
-    public Comment() {
+    public CommentEntity() {
     }
 
-    public Comment(long id, String content, User commenter, Task commentedTask, LocalDate commentCreationDate) {
+    public CommentEntity(long id, String content, UserEntity commenter, TaskEntity commentedTaskEntity, LocalDate commentCreationDate) {
         this.id = id;
         this.content = content;
         this.commenter = commenter;
-        this.commentedTask = commentedTask;
+        this.commentedTaskEntity = commentedTaskEntity;
         this.commentCreationDate = commentCreationDate;
     }
 
@@ -62,20 +62,20 @@ public class Comment {
         this.content = content;
     }
 
-    public User getCommenter() {
+    public UserEntity getCommenter() {
         return commenter;
     }
 
-    public void setCommenter(User commenter) {
+    public void setCommenter(UserEntity commenter) {
         this.commenter = commenter;
     }
 
-    public Task getCommentedTask() {
-        return commentedTask;
+    public TaskEntity getCommentedTask() {
+        return commentedTaskEntity;
     }
 
-    public void setCommentedTask(Task commentedTask) {
-        this.commentedTask = commentedTask;
+    public void setCommentedTask(TaskEntity commentedTaskEntity) {
+        this.commentedTaskEntity = commentedTaskEntity;
     }
 
     public LocalDate getCommentCreationDate() {
@@ -90,7 +90,7 @@ public class Comment {
     public String toString() {
         return "Comment{" +
                 "commentCreationDate=" + commentCreationDate +
-                ", commentedTask=" + commentedTask +
+                ", commentedTask=" + commentedTaskEntity +
                 ", commenter=" + commenter +
                 ", content='" + content + '\'' +
                 ", id=" + id +
@@ -101,12 +101,12 @@ public class Comment {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Comment comment = (Comment) o;
-        return id == comment.id && Objects.equals(content, comment.content) && Objects.equals(commenter, comment.commenter) && Objects.equals(commentedTask, comment.commentedTask) && Objects.equals(commentCreationDate, comment.commentCreationDate);
+        CommentEntity commentEntity = (CommentEntity) o;
+        return id == commentEntity.id && Objects.equals(content, commentEntity.content) && Objects.equals(commenter, commentEntity.commenter) && Objects.equals(commentedTaskEntity, commentEntity.commentedTaskEntity) && Objects.equals(commentCreationDate, commentEntity.commentCreationDate);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, content, commenter, commentedTask, commentCreationDate);
+        return Objects.hash(id, content, commenter, commentedTaskEntity, commentCreationDate);
     }
 }

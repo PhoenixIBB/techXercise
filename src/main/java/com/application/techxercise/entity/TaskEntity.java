@@ -9,7 +9,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "tasks")
-public class Task {
+public class TaskEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -32,20 +32,20 @@ public class Task {
 
     @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH }, fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")
-    private User author;
+    private UserEntity author;
 
     @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH }, fetch = FetchType.EAGER)
     @JoinColumn(name = "executor_id")
-    private User executor;
+    private UserEntity executor;
 
-    @OneToMany(mappedBy = "commentedTask"
+    @OneToMany(mappedBy = "commentedTaskEntity"
             , cascade = CascadeType.ALL)
-    private List<Comment> comments;
+    private List<CommentEntity> commentEntities;
 
-    public Task() {
+    public TaskEntity() {
     }
 
-    public Task(int id, String title, String description, TaskStatus status, TaskPriority priority, User author, User executor, List<Comment> comments) {
+    public TaskEntity(int id, String title, String description, TaskStatus status, TaskPriority priority, UserEntity author, UserEntity executor, List<CommentEntity> commentEntities) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -53,7 +53,7 @@ public class Task {
         this.priority = priority;
         this.author = author;
         this.executor = executor;
-        this.comments = comments;
+        this.commentEntities = commentEntities;
     }
 
     public long getId() {
@@ -96,28 +96,28 @@ public class Task {
         this.priority = priority;
     }
 
-    public User getAuthor() {
+    public UserEntity getAuthor() {
         return author;
     }
 
-    public void setAuthor(User author) {
+    public void setAuthor(UserEntity author) {
         this.author = author;
     }
 
-    public User getExecutor() {
+    public UserEntity getExecutor() {
         return executor;
     }
 
-    public void setExecutor(User executor) {
+    public void setExecutor(UserEntity executor) {
         this.executor = executor;
     }
 
-    public List<Comment> getComments() {
-        return comments;
+    public List<CommentEntity> getComments() {
+        return commentEntities;
     }
 
-    public void setComments(List<Comment> comments) {
-        this.comments = comments;
+    public void setComments(List<CommentEntity> commentEntities) {
+        this.commentEntities = commentEntities;
     }
 
     @Override
@@ -137,12 +137,12 @@ public class Task {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        Task task = (Task) o;
-        return id == task.id && Objects.equals(title, task.title) && Objects.equals(description, task.description) && status == task.status && priority == task.priority && Objects.equals(author, task.author) && Objects.equals(executor, task.executor) && Objects.equals(comments, task.comments);
+        TaskEntity taskEntity = (TaskEntity) o;
+        return id == taskEntity.id && Objects.equals(title, taskEntity.title) && Objects.equals(description, taskEntity.description) && status == taskEntity.status && priority == taskEntity.priority && Objects.equals(author, taskEntity.author) && Objects.equals(executor, taskEntity.executor) && Objects.equals(commentEntities, taskEntity.commentEntities);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, description, status, priority, author, executor, comments);
+        return Objects.hash(id, title, description, status, priority, author, executor, commentEntities);
     }
 }

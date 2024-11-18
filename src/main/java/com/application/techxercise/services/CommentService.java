@@ -1,24 +1,16 @@
 package com.application.techXercise.services;
 
-import com.application.techXercise.entity.Comment;
-import com.application.techXercise.entity.Task;
+import com.application.techXercise.entity.CommentEntity;
+import com.application.techXercise.entity.TaskEntity;
 import com.application.techXercise.exceptions.CommentNotFoundException;
 import com.application.techXercise.exceptions.TaskNotFoundException;
 import com.application.techXercise.repositories.CommentRepository;
 import com.application.techXercise.repositories.TaskRepository;
-import com.application.techXercise.repositories.UserRepository;
-import com.application.techXercise.utils.TaskStatus;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -27,61 +19,69 @@ import java.util.function.Consumer;
 @Transactional
 public class CommentService {
 
-    @Autowired
-    private CommentRepository commentRepository;
-    @Autowired
-    private UserRepository userRepository;
-    @Autowired
-    private TaskRepository taskRepository;
+    private final CommentRepository commentRepository;
+    private final TaskRepository taskRepository;
 
-    public List<Comment> getAllComments() {
-        List<Comment> comments = commentRepository.findAll();
+    public CommentService(CommentRepository commentRepository, TaskRepository taskRepository) {
+        this.commentRepository = commentRepository;
+        this.taskRepository = taskRepository;
+    }
+
+    // Создать комментарий
+    public CommentEntity createComment(long taskId, CommentEntity commentEntity) throws TaskNotFoundException {
+        // Проверяем, существует ли задача с указанным taskId
+        TaskEntity taskEntity = taskRepository.findById(taskId)
+                .orElseThrow(() -> new TaskNotFoundException("Задача с id " + taskId + " не найдена."));
+
+        // Привязываем задачу к комментарию
+        commentEntity.setCommentedTask(taskEntity);
+
+        // Сохраняем комментарий в базе данных
+        return commentRepository.saveAndFlush(commentEntity);
+    }
+
+//    // Получить все комментарии
+//    public List<CommentEntity> getAllComments() {
+//        return commentRepository.findAll();
+//    }
+
+    // Получить комментарии к задаче
+    public List<CommentEntity> getTaskComments(long taskId) {
+        return commentRepository.findByCommentedTaskEntityId(taskId);
+    }
+
+    // Получить все комментарии пользователя
+    public List<CommentEntity> getByCommenterId(long commenterId) throws CommentNotFoundException {
+        List<CommentEntity> comments = commentRepository.findByCommenterId(commenterId);
         if (comments.isEmpty()) {
-            return new ArrayList<>();
+            throw new CommentNotFoundException("Комментарии пользователя с id " + commenterId + " не найдены.");
         }
         return comments;
     }
 
-    public Comment getCommentById(long commentId) throws CommentNotFoundException {
-        return commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Не найден комментарий с id " + commentId));
+    // Получить комментарий по id
+    public CommentEntity getCommentById(long commentId) throws CommentNotFoundException {
+        return commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Комментарий не найден!"));
     }
 
-    public Comment updateCommentProperty(long id, Consumer<Comment> updater) {
-        Comment commentForChanging = commentRepository.findById(id).orElse(null);
-        updater.accept(commentForChanging);
-        return commentRepository.saveAndFlush(commentForChanging);
+    // Универсальный Update-метод
+    public CommentEntity updateCommentProperty(long id, Consumer<CommentEntity> updater) throws CommentNotFoundException {
+        CommentEntity commentEntityForUpdating = commentRepository.findById(id).orElseThrow(() -> new CommentNotFoundException("Комментарий не найден."));
+        updater.accept(commentEntityForUpdating);
+        return commentRepository.saveAndFlush(commentEntityForUpdating);
     }
 
-    public Comment updateCommentContent(long id, String content) {
+    // Отредактировать комментарий
+    public CommentEntity updateCommentContent(long id, String content) throws CommentNotFoundException {
         return updateCommentProperty(id, comment -> comment.setContent(content));
     }
 
-    public Comment createComment(long taskId, Comment comment) throws TaskNotFoundException {
-        Task task = taskRepository.findById(taskId).orElseThrow(() -> new TaskNotFoundException("Задача не найдена! Невозможно создать комментарий."));
-        comment.setCommentedTask(task);
-        commentRepository.saveAndFlush(comment);
-        return comment;
+    // Удалить комментарий
+    public boolean deleteComment(long commentId) throws CommentNotFoundException, AccessDeniedException {
+        CommentEntity commentEntity = commentRepository.findById(commentId)
+                .orElseThrow(() -> new CommentNotFoundException("Не найден комментарий с id " + commentId));
+        commentRepository.delete(commentEntity);
+        return true;
     }
-
-    public boolean deleteComment(long commentId, long userId) throws CommentNotFoundException {
-        Comment comment = commentRepository.findById(commentId).orElseThrow(() -> new CommentNotFoundException("Не найден комментарий с id " + commentId));
-        if (comment != null && comment.getCommenter().getId() == userId) {
-            commentRepository.delete(comment);
-            return true;
-        }
-        return false;
-    }
-
-    // Особые методы
-
-    public List<Comment> getByAuthorId(long commenterId) {
-//        return userRepository.findById(authorId).getCommentsCreated();
-        return commentRepository.findByCommenterId(commenterId);
-    }
-
-    public List<Comment> getByCommentDate(LocalDate commentCreationDate) {
-        return commentRepository.findByCommentDate(commentCreationDate);
-    }
-
 
 }

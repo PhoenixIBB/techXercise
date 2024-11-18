@@ -1,18 +1,12 @@
 package com.application.techXercise.repositories;
 
-import com.application.techXercise.entity.User;
+import com.application.techXercise.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
-public interface UserRepository extends JpaRepository<User, Long> {
+public interface UserRepository extends JpaRepository<UserEntity, Long> {
 
-    List<User> findAll();
-    User findByUsername(String username);
-    User findByEmail(String email);
-    User findByUsernameAndPassword(String username, String password);
-    User findByEmailAndPassword(String email, String password);
+    UserEntity findByEmail(String email);;
 
 }

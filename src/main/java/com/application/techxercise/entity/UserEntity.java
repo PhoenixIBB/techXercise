@@ -9,7 +9,7 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "users")
-public class User {
+public class UserEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -34,20 +34,20 @@ public class User {
 
     @OneToMany(mappedBy = "author"
             , cascade = {CascadeType.ALL})
-    private List<Task> tasksCreated;
+    private List<TaskEntity> tasksCreated;
 
     @OneToMany(mappedBy = "executor"
             , cascade = {CascadeType.ALL})
-    private List<Task> tasksExecuted;
+    private List<TaskEntity> tasksExecuted;
 
     @OneToMany(mappedBy = "commenter"
             , cascade = {CascadeType.ALL})
-    private List<Comment> commentsCreated;
+    private List<CommentEntity> commentsCreated;
 
-    public User() {
+    public UserEntity() {
     }
 
-    public User(long id, String name, String surname, String email, String password, Role role, List<Task> tasksCreated, List<Task> tasksExecuted, List<Comment> commentsCreated) {
+    public UserEntity(String name, String surname, String email, String password, Role role, List<TaskEntity> tasksCreated, List<TaskEntity> tasksExecuted, List<CommentEntity> commentsCreated) {
         this.id = id;
         this.name = name;
         this.surname = surname;
@@ -107,38 +107,43 @@ public class User {
         this.role = role;
     }
 
-    public List<Task> getTasksCreated() {
+    public List<TaskEntity> getTasksCreated() {
         return tasksCreated;
     }
 
-    public void setTasksCreated(List<Task> tasksCreated) {
+    public void setTasksCreated(List<TaskEntity> tasksCreated) {
         this.tasksCreated = tasksCreated;
     }
 
-    public List<Task> getTasksExecuted() {
+    public List<TaskEntity> getTasksExecuted() {
         return tasksExecuted;
     }
 
-    public void setTasksExecuted(List<Task> tasksExecuted) {
+    public void setTasksExecuted(List<TaskEntity> tasksExecuted) {
         this.tasksExecuted = tasksExecuted;
     }
 
-    public List<Comment> getCommentsCreated() {
+    public List<CommentEntity> getCommentsCreated() {
         return commentsCreated;
     }
 
-    public void setCommentsCreated(List<Comment> commentsCreated) {
+    public void setCommentsCreated(List<CommentEntity> commentsCreated) {
         this.commentsCreated = commentsCreated;
+    }
+
+    public String getRolesString() {
+        return role.toString();
     }
 
     @Override
     public String toString() {
         return "User{" +
-                "id=" + id +
-                ", name='" + name + '\'' +
-                ", surname='" + surname + '\'' +
-                ", email='" + email + '\'' +
+                "role=" + role +
                 ", password='" + password + '\'' +
+                ", email='" + email + '\'' +
+                ", surname='" + surname + '\'' +
+                ", name='" + name + '\'' +
+                ", id=" + id +
                 '}';
     }
 
@@ -146,8 +151,8 @@ public class User {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        User user = (User) o;
-        return id == user.id && Objects.equals(name, user.name) && Objects.equals(surname, user.surname) && Objects.equals(email, user.email) && Objects.equals(password, user.password) && Objects.equals(tasksCreated, user.tasksCreated) && Objects.equals(tasksExecuted, user.tasksExecuted) && Objects.equals(commentsCreated, user.commentsCreated);
+        UserEntity userEntity = (UserEntity) o;
+        return id == userEntity.id && Objects.equals(name, userEntity.name) && Objects.equals(surname, userEntity.surname) && Objects.equals(email, userEntity.email) && Objects.equals(password, userEntity.password) && Objects.equals(tasksCreated, userEntity.tasksCreated) && Objects.equals(tasksExecuted, userEntity.tasksExecuted) && Objects.equals(commentsCreated, userEntity.commentsCreated);
     }
 
     @Override

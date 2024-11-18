@@ -1,18 +1,15 @@
 package com.application.techXercise.repositories;
 
-import com.application.techXercise.entity.Comment;
+import com.application.techXercise.entity.CommentEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Repository
-public interface CommentRepository extends JpaRepository<Comment, Long> {
+public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
 
-    Comment findByAuthor(String author);
-    List<Comment> findByCommentDate(LocalDate date);
-    List<Comment> findByCommenterId(long authorId);
+    List<CommentEntity> findByCommenterId(long commenterId);
+    List<CommentEntity> findByCommentedTaskEntityId(long taskId);
 
 }
