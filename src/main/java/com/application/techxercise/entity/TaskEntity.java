@@ -2,6 +2,8 @@ package com.application.techXercise.entity;
 
 import com.application.techXercise.utils.TaskPriority;
 import com.application.techXercise.utils.TaskStatus;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -30,23 +32,25 @@ public class TaskEntity {
     @Column(name = "priority")
     private TaskPriority priority;
 
-    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH }, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "author_id")
+    @JsonBackReference("authorTasks")
     private UserEntity author;
 
-    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH }, fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "executor_id")
+    @JsonBackReference("executorTasks")
     private UserEntity executor;
 
     @OneToMany(mappedBy = "commentedTaskEntity"
             , cascade = CascadeType.ALL)
+    @JsonManagedReference("taskComments")
     private List<CommentEntity> commentEntities;
 
     public TaskEntity() {
     }
 
-    public TaskEntity(int id, String title, String description, TaskStatus status, TaskPriority priority, UserEntity author, UserEntity executor, List<CommentEntity> commentEntities) {
-        this.id = id;
+    public TaskEntity(String title, String description, TaskStatus status, TaskPriority priority, UserEntity author, UserEntity executor, List<CommentEntity> commentEntities) {
         this.title = title;
         this.description = description;
         this.status = status;

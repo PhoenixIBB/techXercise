@@ -1,6 +1,8 @@
 package com.application.techXercise.entity;
 
 import com.application.techXercise.utils.Role;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -33,22 +35,24 @@ public class UserEntity {
     private Role role;
 
     @OneToMany(mappedBy = "author"
-            , cascade = {CascadeType.ALL})
+            , cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
+    @JsonManagedReference("authorTasks")
     private List<TaskEntity> tasksCreated;
 
     @OneToMany(mappedBy = "executor"
-            , cascade = {CascadeType.ALL})
+            , cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH })
+    @JsonManagedReference("executorTasks")
     private List<TaskEntity> tasksExecuted;
 
     @OneToMany(mappedBy = "commenter"
             , cascade = {CascadeType.ALL})
+    @JsonManagedReference("commenterComments")
     private List<CommentEntity> commentsCreated;
 
     public UserEntity() {
     }
 
     public UserEntity(String name, String surname, String email, String password, Role role, List<TaskEntity> tasksCreated, List<TaskEntity> tasksExecuted, List<CommentEntity> commentsCreated) {
-        this.id = id;
         this.name = name;
         this.surname = surname;
         this.email = email;

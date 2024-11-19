@@ -3,6 +3,7 @@ package com.application.techXercise.services;
 import com.application.techXercise.entity.TaskEntity;
 import com.application.techXercise.entity.UserEntity;
 import com.application.techXercise.exceptions.TaskNotFoundException;
+import com.application.techXercise.exceptions.UserNotFoundException;
 import com.application.techXercise.repositories.TaskRepository;
 import com.application.techXercise.repositories.UserRepository;
 import com.application.techXercise.utils.TaskStatus;
@@ -27,7 +28,16 @@ public class TaskService {
     }
 
     // Создать задачу
-    public TaskEntity createTask(TaskEntity taskEntity) {
+    public TaskEntity createTask(TaskEntity taskEntity) throws UserNotFoundException {
+
+        UserEntity author = userRepository.findById(taskEntity.getAuthor().getId())
+                .orElseThrow(() -> new UserNotFoundException("Author not found"));
+        UserEntity executor = userRepository.findById(taskEntity.getExecutor().getId())
+                .orElseThrow(() -> new UserNotFoundException("Executor not found"));
+
+        taskEntity.setAuthor(author);
+        taskEntity.setExecutor(executor);
+
         taskRepository.saveAndFlush(taskEntity);
         return taskEntity;
     }
@@ -62,6 +72,12 @@ public class TaskService {
         TaskEntity existingTaskEntity = taskRepository.findById(updatedTaskEntity.getId())
                 .orElseThrow(() -> new TaskNotFoundException("Задача не найдена!"));
 
+        if (!updatedTaskEntity.getTitle().equals(existingTaskEntity.getTitle())) {
+            existingTaskEntity.setTitle(updatedTaskEntity.getTitle());
+        }
+        if (!updatedTaskEntity.getDescription().equals(existingTaskEntity.getDescription())) {
+            existingTaskEntity.setDescription(updatedTaskEntity.getDescription());
+        }
         if (updatedTaskEntity.getStatus() != null) {
             existingTaskEntity.setStatus(updatedTaskEntity.getStatus());
         }

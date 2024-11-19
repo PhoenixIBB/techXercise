@@ -1,5 +1,7 @@
 package com.application.techXercise.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -17,15 +19,17 @@ public class CommentEntity {
     @Column(name = "content")
     private String content;
 
-    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH }, fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "commenter_id")
+    @JsonBackReference("commenterComments")
     private UserEntity commenter;
 
-    @ManyToOne(cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH }, fetch = FetchType.LAZY)
-    @JoinColumn(name = "commentedTask_id")
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "commented_task_id")
+    @JsonBackReference("taskComments")
     private TaskEntity commentedTaskEntity;
 
-    @Column(name = "commentCreationDate")
+    @Column(name = "comment_creation_date")
     private LocalDate commentCreationDate;
 
     @PrePersist
@@ -38,8 +42,7 @@ public class CommentEntity {
     public CommentEntity() {
     }
 
-    public CommentEntity(long id, String content, UserEntity commenter, TaskEntity commentedTaskEntity, LocalDate commentCreationDate) {
-        this.id = id;
+    public CommentEntity(String content, UserEntity commenter, TaskEntity commentedTaskEntity, LocalDate commentCreationDate) {
         this.content = content;
         this.commenter = commenter;
         this.commentedTaskEntity = commentedTaskEntity;

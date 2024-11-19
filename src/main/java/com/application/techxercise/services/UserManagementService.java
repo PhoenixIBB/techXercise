@@ -64,7 +64,7 @@ public class UserManagementService {
 
     // Сменить пароль   (подумать над безопасностью и шифрованием)
     public UserEntity updateUserPassword(long id, String rawPassword) throws UserNotFoundException {
-        return updateUserProperty(id, user -> user.setPassword(passwordEncoder.encode(rawPassword)));
+        return updateUserProperty(id, user -> user.setPassword(rawPassword));
     }
 
     // Удалить пользователя

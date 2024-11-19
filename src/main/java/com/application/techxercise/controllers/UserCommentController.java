@@ -3,6 +3,8 @@ package com.application.techXercise.controllers;
 import com.application.techXercise.entity.CommentEntity;
 import com.application.techXercise.exceptions.CommentNotFoundException;
 import com.application.techXercise.exceptions.TaskNotFoundException;
+import com.application.techXercise.exceptions.UserNotFoundException;
+import com.application.techXercise.repositories.UserRepository;
 import com.application.techXercise.services.CommentService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -11,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/user/tasks/{userId}/comments")
+@RequestMapping("/api/user/tasks/{userId}/{taskId}/comments")
 public class UserCommentController {
 
     CommentService commentService;
@@ -22,8 +24,8 @@ public class UserCommentController {
 
     // Создать комментарий
     @PostMapping("/")
-    public ResponseEntity<CommentEntity> createComment(@PathVariable long taskId, @RequestBody CommentEntity commentEntity) throws TaskNotFoundException {
-        CommentEntity createdComment = commentService.createComment(taskId, commentEntity);
+    public ResponseEntity<CommentEntity> createComment(@PathVariable long taskId, @RequestBody String content) throws TaskNotFoundException, UserNotFoundException {
+        CommentEntity createdComment = commentService.createComment(taskId, content);
         return createdComment != null ?
                 ResponseEntity.ok(createdComment) :
                 ResponseEntity.notFound().build();
@@ -32,11 +34,11 @@ public class UserCommentController {
     // Получить комментарии пользователя
     @GetMapping("/")
     public ResponseEntity<List<CommentEntity>> getUserComments(@PathVariable long userId) throws CommentNotFoundException {
-        List<CommentEntity> commentsCommenterById = commentService.getByCommenterId(userId);
-        if (commentsCommenterById.isEmpty()) {
-            return ResponseEntity.noContent().build(); // 204 если комментарии есть, но пустые
+        List<CommentEntity> commentsByCommenterId = commentService.getByCommenterId(userId);
+        if (commentsByCommenterId.isEmpty()) {
+            return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.ok(commentsCommenterById); // 200 если комментарии найдены
+        return ResponseEntity.ok(commentsByCommenterId);
     }
 
     // Редактировать комментарий

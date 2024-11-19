@@ -2,15 +2,20 @@ package com.application.techXercise.services;
 
 import com.application.techXercise.entity.CommentEntity;
 import com.application.techXercise.entity.TaskEntity;
+import com.application.techXercise.entity.UserEntity;
 import com.application.techXercise.exceptions.CommentNotFoundException;
 import com.application.techXercise.exceptions.TaskNotFoundException;
+import com.application.techXercise.exceptions.UserNotFoundException;
 import com.application.techXercise.repositories.CommentRepository;
 import com.application.techXercise.repositories.TaskRepository;
+import com.application.techXercise.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
@@ -20,24 +25,25 @@ import java.util.function.Consumer;
 public class CommentService {
 
     private final CommentRepository commentRepository;
+    private final UserRepository userRepository;
     private final TaskRepository taskRepository;
 
-    public CommentService(CommentRepository commentRepository, TaskRepository taskRepository) {
+    public CommentService(CommentRepository commentRepository, TaskRepository taskRepository, UserRepository userRepository) {
         this.commentRepository = commentRepository;
+        this.userRepository = userRepository;
         this.taskRepository = taskRepository;
     }
 
     // Создать комментарий
-    public CommentEntity createComment(long taskId, CommentEntity commentEntity) throws TaskNotFoundException {
-        // Проверяем, существует ли задача с указанным taskId
-        TaskEntity taskEntity = taskRepository.findById(taskId)
-                .orElseThrow(() -> new TaskNotFoundException("Задача с id " + taskId + " не найдена."));
-
-        // Привязываем задачу к комментарию
-        commentEntity.setCommentedTask(taskEntity);
-
-        // Сохраняем комментарий в базе данных
-        return commentRepository.saveAndFlush(commentEntity);
+    public CommentEntity createComment(long taskId, String content) throws TaskNotFoundException, UserNotFoundException {
+        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        UserEntity currentUser = userRepository.findByEmail(currentUserEmail);
+        CommentEntity commentEntity = new CommentEntity();
+        commentEntity.setContent(content);
+        commentEntity.setCommentedTask(taskRepository.findById(taskId).orElse(null));
+        commentEntity.setCommenter(currentUser);
+        commentEntity.setCommentCreationDate(LocalDate.now());
+        return commentRepository.save(commentEntity);
     }
 
 //    // Получить все комментарии

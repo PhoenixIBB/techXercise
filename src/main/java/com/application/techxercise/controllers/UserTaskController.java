@@ -20,15 +20,6 @@ public class UserTaskController {
         this.taskService = taskService;
     }
 
-    // Получить все задачи пользователя
-//    @GetMapping("/")
-//    public ResponseEntity<List<TaskEntity>> showAllTasks() {
-//        List<TaskEntity> taskEntities = taskService.getAllTasks();
-//        return taskEntities.isEmpty() ?
-//                ResponseEntity.noContent().build() :
-//                ResponseEntity.ok(taskEntities);
-//    }
-
     // Эндпоинт для вывода задач исполнителя
     @GetMapping("/executor")
     public ResponseEntity<List<TaskEntity>> showExecutorTasks(@PathVariable long userId) {

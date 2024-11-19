@@ -10,6 +10,6 @@ import java.util.List;
 public interface TaskRepository extends JpaRepository<TaskEntity, Long> {
 
     List<TaskEntity> findByAuthorId(Long authorId);    // по автору
-    List<TaskEntity> findByExecutorId(Long assigneeId);    // по исполнителю
+    List<TaskEntity> findByExecutorId(Long executorId);    // по исполнителю
 
 }

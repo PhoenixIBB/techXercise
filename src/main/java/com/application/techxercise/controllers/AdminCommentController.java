@@ -3,6 +3,7 @@ package com.application.techXercise.controllers;
 import com.application.techXercise.entity.CommentEntity;
 import com.application.techXercise.exceptions.CommentNotFoundException;
 import com.application.techXercise.exceptions.TaskNotFoundException;
+import com.application.techXercise.exceptions.UserNotFoundException;
 import com.application.techXercise.services.CommentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +24,8 @@ public class AdminCommentController {
 
     // Создать комментарий
     @PostMapping("/")
-    public ResponseEntity<CommentEntity> createComment(@PathVariable long taskId, @RequestBody CommentEntity commentEntity) throws TaskNotFoundException {
-        CommentEntity createdComment = commentService.createComment(taskId, commentEntity);
+    public ResponseEntity<CommentEntity> createComment(@PathVariable long taskId, @RequestBody String content) throws TaskNotFoundException, UserNotFoundException {
+        CommentEntity createdComment = commentService.createComment(taskId, content);
         return createdComment != null ?
                 ResponseEntity.ok(createdComment) :
                 ResponseEntity.notFound().build();
