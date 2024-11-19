@@ -6,7 +6,13 @@ import com.application.techXercise.exceptions.TaskNotFoundException;
 import com.application.techXercise.exceptions.UserNotFoundException;
 import com.application.techXercise.repositories.TaskRepository;
 import com.application.techXercise.repositories.UserRepository;
+import com.application.techXercise.utils.TaskPriority;
+import com.application.techXercise.utils.TaskSpecifications;
 import com.application.techXercise.utils.TaskStatus;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,9 +37,9 @@ public class TaskService {
     public TaskEntity createTask(TaskEntity taskEntity) throws UserNotFoundException {
 
         UserEntity author = userRepository.findById(taskEntity.getAuthor().getId())
-                .orElseThrow(() -> new UserNotFoundException("Author not found"));
+                .orElseThrow(() -> new UserNotFoundException("Автор не найден"));
         UserEntity executor = userRepository.findById(taskEntity.getExecutor().getId())
-                .orElseThrow(() -> new UserNotFoundException("Executor not found"));
+                .orElseThrow(() -> new UserNotFoundException("Исполнитель не найден"));
 
         taskEntity.setAuthor(author);
         taskEntity.setExecutor(executor);
@@ -58,13 +64,22 @@ public class TaskService {
     }
 
     // Получить задачи конкретного автора
-    public List<TaskEntity> getTasksByAuthor(long userId) {
-        return taskRepository.findByAuthorId(userId);
+    public Page<TaskEntity> getTasksByAuthor(long authorId, int page, int size, TaskStatus status, TaskPriority priority) {
+        Pageable pageable = PageRequest.of(page, size);
+        Specification<TaskEntity> specification = Specification.where(TaskSpecifications.byAuthor(authorId))
+                .and(TaskSpecifications.byStatus(status))
+                .and(TaskSpecifications.byPriority(priority));
+
+        return taskRepository.findAll(specification, pageable);
     }
 
-    // Получить задачи конкретного автора
-    public List<TaskEntity> getTasksByExecutor(long userId) {
-        return taskRepository.findByExecutorId(userId);
+    // Получить задачи конкретного исполнителя
+    public Page<TaskEntity> getTasksByExecutor(Long executorId, int page, int size, TaskStatus status, TaskPriority priority) {
+        Pageable pageable = PageRequest.of(page, size);
+        Specification<TaskEntity> specification = Specification.where(TaskSpecifications.byExecutor(executorId))
+                .and(TaskSpecifications.byStatus(status))
+                .and(TaskSpecifications.byPriority(priority));
+        return taskRepository.findAll(specification, pageable);
     }
 
     // Редактирование задачи для администратора

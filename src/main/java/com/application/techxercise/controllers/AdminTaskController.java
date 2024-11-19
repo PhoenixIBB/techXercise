@@ -4,7 +4,11 @@ import com.application.techXercise.entity.TaskEntity;
 import com.application.techXercise.exceptions.TaskNotFoundException;
 import com.application.techXercise.exceptions.UserNotFoundException;
 import com.application.techXercise.services.TaskService;
-import com.application.techXercise.services.UserManagementService;
+import com.application.techXercise.utils.TaskPriority;
+import com.application.techXercise.utils.TaskStatus;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -12,18 +16,19 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/admin/")
+@RequestMapping("/api/admin")
 public class AdminTaskController {
 
     private final TaskService taskService;
 
+    @Autowired
     public AdminTaskController(TaskService taskService) {
         this.taskService = taskService;
     }
 
     // Эндпоинт создания задачи
     @PostMapping("/")
-    public ResponseEntity<TaskEntity> createTask(@RequestBody TaskEntity taskEntity) throws UserNotFoundException {
+    public ResponseEntity<TaskEntity> createTask(@Valid @RequestBody TaskEntity taskEntity) throws UserNotFoundException {
         TaskEntity createdTaskEntity = taskService.createTask(taskEntity);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTaskEntity);
     }
@@ -32,27 +37,33 @@ public class AdminTaskController {
     @GetMapping("/tasks")
     public ResponseEntity<List<TaskEntity>> showAllTasks() {
         List<TaskEntity> taskEntities = taskService.getAllTasks();
-        return taskEntities.isEmpty() ?
-                ResponseEntity.notFound().build() :  // Возвращаем 404, если задач нет
-                ResponseEntity.ok(taskEntities);
+        return ResponseEntity.ok(taskEntities);
     }
 
     // Эндпоинт для вывода задач исполнителя
-    @GetMapping("/tasks/{userId}/executor")
-    public ResponseEntity<List<TaskEntity>> showExecutorTasks(@PathVariable long userId) {
-        List<TaskEntity> taskEntities = taskService.getTasksByExecutor(userId);
-        return taskEntities.isEmpty() ?
-                ResponseEntity.noContent().build() :
-                ResponseEntity.ok(taskEntities);
+    @GetMapping("/by-executor/{executorId}")
+    public ResponseEntity<Page<TaskEntity>> getTasksByExecutor(
+            @PathVariable Long executorId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) TaskStatus status,
+            @RequestParam(required = false) TaskPriority priority) {
+
+        Page<TaskEntity> tasks = taskService.getTasksByExecutor(executorId, page, size, status, priority);
+        return ResponseEntity.ok(tasks);
     }
 
     // Эндпоинт для вывода задач автора
-    @GetMapping("/tasks/{userId}/author")
-    public ResponseEntity<List<TaskEntity>> showAuthorTasks(@PathVariable long userId) {
-        List<TaskEntity> taskEntities = taskService.getTasksByAuthor(userId);
-        return taskEntities.isEmpty() ?
-                ResponseEntity.noContent().build() :
-                ResponseEntity.ok(taskEntities);
+    @GetMapping("/by-author/{authorId}")
+    public ResponseEntity<Page<TaskEntity>> getTasksByAuthor(
+            @PathVariable Long authorId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) TaskStatus status,
+            @RequestParam(required = false) TaskPriority priority) {
+
+        Page<TaskEntity> tasks = taskService.getTasksByAuthor(authorId, page, size, status, priority);
+        return ResponseEntity.ok(tasks);
     }
 
     // Эндпоинт вывода конкретной задачи по ID
@@ -65,8 +76,8 @@ public class AdminTaskController {
     }
 
     // Эндпоинт редактирования задачи
-    @PatchMapping("/")
-    public ResponseEntity<TaskEntity> updateTask(@RequestBody TaskEntity taskEntity) throws TaskNotFoundException {
+    @PutMapping("/")
+    public ResponseEntity<TaskEntity> updateTask(@Valid @RequestBody TaskEntity taskEntity) throws TaskNotFoundException {
         return ResponseEntity.ok(taskService.updateTaskByAdmin(taskEntity));
     }
 

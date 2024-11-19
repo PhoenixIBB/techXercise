@@ -5,12 +5,14 @@ import com.application.techXercise.exceptions.CommentNotFoundException;
 import com.application.techXercise.exceptions.TaskNotFoundException;
 import com.application.techXercise.exceptions.UserNotFoundException;
 import com.application.techXercise.services.CommentService;
-import org.springframework.http.HttpStatus;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
+import java.time.LocalDate;
 
 @RestController
 @RequestMapping("/api/admin/tasks/{taskId}/comments")
@@ -18,13 +20,14 @@ public class AdminCommentController {
 
     CommentService commentService;
 
+    @Autowired
     public AdminCommentController(CommentService commentService) {
         this.commentService = commentService;
     }
 
     // Создать комментарий
     @PostMapping("/")
-    public ResponseEntity<CommentEntity> createComment(@PathVariable long taskId, @RequestBody String content) throws TaskNotFoundException, UserNotFoundException {
+    public ResponseEntity<CommentEntity> createComment(@PathVariable long taskId, @Valid @RequestBody String content) throws TaskNotFoundException, UserNotFoundException {
         CommentEntity createdComment = commentService.createComment(taskId, content);
         return createdComment != null ?
                 ResponseEntity.ok(createdComment) :
@@ -33,14 +36,28 @@ public class AdminCommentController {
 
     // Получить все комментарии к задаче
     @GetMapping("/")
-    public ResponseEntity<List<CommentEntity>> getTaskComments(@PathVariable long taskId) {
-        List<CommentEntity> taskComments = commentService.getTaskComments(taskId);
-        return ResponseEntity.ok(taskComments);
+    public ResponseEntity<Page<CommentEntity>> getCommentsForTask(
+            @PathVariable Long taskId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String date) {
+
+        LocalDate parsedDate = null;
+        if (date != null) {
+            try {
+                parsedDate = LocalDate.parse(date);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().build();
+            }
+        }
+
+        Page<CommentEntity> comments = commentService.getCommentsForTask(taskId, parsedDate, page, size);
+        return ResponseEntity.ok(comments);
     }
 
     // Редактировать комментарий
     @PatchMapping("/{commentId}")
-    public ResponseEntity<CommentEntity> updateCommentContent(@PathVariable long commentId, @RequestBody String commentContent) {
+    public ResponseEntity<CommentEntity> updateCommentContent(@PathVariable long commentId, @Valid @RequestBody String commentContent) {
         String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
             CommentEntity existingComment = commentService.getCommentById(commentId);

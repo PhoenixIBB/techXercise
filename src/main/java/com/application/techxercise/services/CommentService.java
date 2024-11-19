@@ -10,6 +10,9 @@ import com.application.techXercise.repositories.CommentRepository;
 import com.application.techXercise.repositories.TaskRepository;
 import com.application.techXercise.repositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -46,19 +49,16 @@ public class CommentService {
         return commentRepository.save(commentEntity);
     }
 
-//    // Получить все комментарии
-//    public List<CommentEntity> getAllComments() {
-//        return commentRepository.findAll();
-//    }
-
     // Получить комментарии к задаче
-    public List<CommentEntity> getTaskComments(long taskId) {
-        return commentRepository.findByCommentedTaskEntityId(taskId);
+    public Page<CommentEntity> getCommentsForTask(Long taskId, LocalDate commentCreationDate, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return commentRepository.findByCommentedTaskEntityIdAndCommentCreationDateAfter(taskId, commentCreationDate, pageable);
     }
 
     // Получить все комментарии пользователя
-    public List<CommentEntity> getByCommenterId(long commenterId) throws CommentNotFoundException {
-        List<CommentEntity> comments = commentRepository.findByCommenterId(commenterId);
+    public Page<CommentEntity> getByCommenterId(long commenterId, int page, int size) throws CommentNotFoundException {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<CommentEntity> comments = commentRepository.findByCommenterId(commenterId, pageable);
         if (comments.isEmpty()) {
             throw new CommentNotFoundException("Комментарии пользователя с id " + commenterId + " не найдены.");
         }

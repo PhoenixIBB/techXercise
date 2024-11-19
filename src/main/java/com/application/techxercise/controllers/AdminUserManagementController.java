@@ -3,6 +3,7 @@ package com.application.techXercise.controllers;
 import com.application.techXercise.entity.UserEntity;
 import com.application.techXercise.exceptions.UserNotFoundException;
 import com.application.techXercise.services.UserManagementService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,12 +16,13 @@ public class AdminUserManagementController {
 
     UserManagementService userManagementService;
 
+    @Autowired
     public AdminUserManagementController(UserManagementService userManagementService) {
         this.userManagementService = userManagementService;
     }
 
     @PostMapping("/")
-    public ResponseEntity<UserEntity> createUser(@RequestBody UserEntity userEntity) {
+    public ResponseEntity<UserEntity> createUser(@Valid @RequestBody UserEntity userEntity) {
         return ResponseEntity.ok(userManagementService.createUser(userEntity));
     }
 

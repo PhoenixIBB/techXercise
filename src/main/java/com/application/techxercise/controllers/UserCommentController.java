@@ -4,27 +4,31 @@ import com.application.techXercise.entity.CommentEntity;
 import com.application.techXercise.exceptions.CommentNotFoundException;
 import com.application.techXercise.exceptions.TaskNotFoundException;
 import com.application.techXercise.exceptions.UserNotFoundException;
-import com.application.techXercise.repositories.UserRepository;
 import com.application.techXercise.services.CommentService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/user/tasks/{userId}/{taskId}/comments")
+@RequestMapping("/api/user/tasks/{taskId}/comments")
 public class UserCommentController {
 
     CommentService commentService;
 
+    @Autowired
     public UserCommentController(CommentService commentService) {
         this.commentService = commentService;
     }
 
     // Создать комментарий
     @PostMapping("/")
-    public ResponseEntity<CommentEntity> createComment(@PathVariable long taskId, @RequestBody String content) throws TaskNotFoundException, UserNotFoundException {
+    public ResponseEntity<CommentEntity> createComment(@PathVariable long taskId, @Valid @RequestBody String content) throws TaskNotFoundException, UserNotFoundException {
         CommentEntity createdComment = commentService.createComment(taskId, content);
         return createdComment != null ?
                 ResponseEntity.ok(createdComment) :
@@ -33,22 +37,32 @@ public class UserCommentController {
 
     // Получить комментарии пользователя
     @GetMapping("/")
-    public ResponseEntity<List<CommentEntity>> getUserComments(@PathVariable long userId) throws CommentNotFoundException {
-        List<CommentEntity> commentsByCommenterId = commentService.getByCommenterId(userId);
-        if (commentsByCommenterId.isEmpty()) {
-            return ResponseEntity.noContent().build();
+    public ResponseEntity<Page<CommentEntity>> getCommentsForTask(
+            @PathVariable Long taskId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String date) {
+        LocalDate parsedDate = null;
+        if (date != null) {
+            try {
+                parsedDate = LocalDate.parse(date);
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().build();
+            }
         }
-        return ResponseEntity.ok(commentsByCommenterId);
+        Page<CommentEntity> comments = commentService.getCommentsForTask(taskId, parsedDate, page, size);
+        return ResponseEntity.ok(comments);
     }
 
     // Редактировать комментарий
     @PatchMapping("/{commentId}")
-    public ResponseEntity<CommentEntity> updateCommentContent(@PathVariable long commentId, @RequestBody String commentContent) {
+    public ResponseEntity<CommentEntity> updateCommentContent(@PathVariable long commentId
+            , @Valid @RequestBody String commentContent) {
         String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
             CommentEntity existingComment = commentService.getCommentById(commentId);
             if (!existingComment.getCommenter().getEmail().equals(currentUserEmail)) {
-                throw new SecurityException("Вы не являетесь автором этого комментария и не можете его редактировать.");
+                return ResponseEntity.status(403).build();
             }
             CommentEntity updatedCommentEntity = commentService.updateCommentContent(commentId, commentContent);
             return ResponseEntity.ok(updatedCommentEntity);
@@ -64,7 +78,7 @@ public class UserCommentController {
         try {
             CommentEntity existingComment = commentService.getCommentById(commentId);
             if (!existingComment.getCommenter().getEmail().equals(currentUserEmail)) {
-                throw new SecurityException("Вы не являетесь автором этого комментария и не можете его удалить.");
+                return ResponseEntity.status(403).build();
             }
             boolean deleted = commentService.deleteComment(commentId);
             return deleted ? ResponseEntity.ok().build() : ResponseEntity.notFound().build();
