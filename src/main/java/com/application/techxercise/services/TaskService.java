@@ -6,9 +6,13 @@ import com.application.techXercise.exceptions.TaskNotFoundException;
 import com.application.techXercise.exceptions.UserNotFoundException;
 import com.application.techXercise.repositories.TaskRepository;
 import com.application.techXercise.repositories.UserRepository;
+import com.application.techXercise.dto.TaskRequestDTO;
+import com.application.techXercise.dto.TaskResponseDTO;
+import com.application.techXercise.utils.TaskMapper;
 import com.application.techXercise.utils.TaskPriority;
 import com.application.techXercise.utils.TaskSpecifications;
 import com.application.techXercise.utils.TaskStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -27,94 +32,111 @@ public class TaskService {
 
     private final TaskRepository taskRepository;
     private final UserRepository userRepository;
+    private final TaskMapper taskMapper;
 
-    public TaskService(TaskRepository taskRepository, UserRepository userRepository) {
+    @Autowired
+    public TaskService(TaskRepository taskRepository, UserRepository userRepository, TaskMapper taskMapper) {
         this.taskRepository = taskRepository;
         this.userRepository = userRepository;
+        this.taskMapper = taskMapper;
     }
 
     // Создать задачу
-    public TaskEntity createTask(TaskEntity taskEntity) throws UserNotFoundException {
+    public TaskResponseDTO createTask(TaskRequestDTO taskRequestDTO) throws UserNotFoundException {
 
-        UserEntity author = userRepository.findById(taskEntity.getAuthor().getId())
-                .orElseThrow(() -> new UserNotFoundException("Автор не найден"));
-        UserEntity executor = userRepository.findById(taskEntity.getExecutor().getId())
-                .orElseThrow(() -> new UserNotFoundException("Исполнитель не найден"));
+        Long authorId = taskRequestDTO.getAuthor().getId();
+        Long executorId = taskRequestDTO.getExecutor().getId();
 
-        taskEntity.setAuthor(author);
-        taskEntity.setExecutor(executor);
+        if (authorId == null || executorId == null ||
+                userRepository.findById(authorId).isEmpty() ||
+                userRepository.findById(executorId).isEmpty()) {
+            throw new UserNotFoundException("Пользователь с указанным id не найден.");
+        }
 
+        TaskEntity taskEntity = taskMapper.fromRequestDTO(taskRequestDTO);
         taskRepository.saveAndFlush(taskEntity);
-        return taskEntity;
+
+        return taskMapper.toResponseDTO(taskEntity);
     }
 
     // Получить все задачи
-    public List<TaskEntity> getAllTasks() {
-        List<TaskEntity> taskEntities = taskRepository.findAll();
-        if (taskEntities.isEmpty()) {
+    public List<TaskResponseDTO> getAllTasks() {
+        List<TaskEntity> allTasks = taskRepository.findAll();
+        if (allTasks.isEmpty()) {
             return new ArrayList<>();
         }
-        return taskEntities;
+        return allTasks.stream()
+                .map(taskMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     // Получить задачу по ID
-    public TaskEntity getTaskById(long id) throws TaskNotFoundException {
-        return taskRepository.findById(id)
-                .orElseThrow(() -> new TaskNotFoundException("Задача не найдена!"));
+    public TaskResponseDTO getTaskById(long id) throws TaskNotFoundException {
+        return taskMapper.toResponseDTO(taskRepository.findById(id)
+                .orElseThrow(() -> new TaskNotFoundException("Задача не найдена!")));
     }
 
     // Получить задачи конкретного автора
-    public Page<TaskEntity> getTasksByAuthor(long authorId, int page, int size, TaskStatus status, TaskPriority priority) {
+    public Page<TaskResponseDTO> getTasksByAuthor(long authorId, int page, int size, TaskStatus status, TaskPriority priority) {
         Pageable pageable = PageRequest.of(page, size);
+
         Specification<TaskEntity> specification = Specification.where(TaskSpecifications.byAuthor(authorId))
                 .and(TaskSpecifications.byStatus(status))
                 .and(TaskSpecifications.byPriority(priority));
 
-        return taskRepository.findAll(specification, pageable);
+        Page<TaskEntity> taskEntities = taskRepository.findAll(specification, pageable);
+
+        return taskEntities.map(taskMapper::toResponseDTO);
     }
 
     // Получить задачи конкретного исполнителя
-    public Page<TaskEntity> getTasksByExecutor(Long executorId, int page, int size, TaskStatus status, TaskPriority priority) {
+    public Page<TaskResponseDTO> getTasksByExecutor(Long executorId, int page, int size, TaskStatus status, TaskPriority priority) {
         Pageable pageable = PageRequest.of(page, size);
+
         Specification<TaskEntity> specification = Specification.where(TaskSpecifications.byExecutor(executorId))
                 .and(TaskSpecifications.byStatus(status))
                 .and(TaskSpecifications.byPriority(priority));
-        return taskRepository.findAll(specification, pageable);
+
+        Page<TaskEntity> taskEntities = taskRepository.findAll(specification, pageable);
+
+        return taskEntities.map(taskMapper::toResponseDTO);
     }
 
     // Редактирование задачи для администратора
-    public TaskEntity updateTaskByAdmin(TaskEntity updatedTaskEntity) throws TaskNotFoundException {
-        TaskEntity existingTaskEntity = taskRepository.findById(updatedTaskEntity.getId())
+    public TaskResponseDTO updateTaskByAdmin(TaskRequestDTO taskRequestDTO) throws TaskNotFoundException {
+        TaskEntity existingTaskEntity = taskRepository.findById(taskRequestDTO.getId())
                 .orElseThrow(() -> new TaskNotFoundException("Задача не найдена!"));
 
-        if (!updatedTaskEntity.getTitle().equals(existingTaskEntity.getTitle())) {
-            existingTaskEntity.setTitle(updatedTaskEntity.getTitle());
+        if (!taskRequestDTO.getTitle().equals(existingTaskEntity.getTitle())) {
+            existingTaskEntity.setTitle(taskRequestDTO.getTitle());
         }
-        if (!updatedTaskEntity.getDescription().equals(existingTaskEntity.getDescription())) {
-            existingTaskEntity.setDescription(updatedTaskEntity.getDescription());
+        if (!taskRequestDTO.getDescription().equals(existingTaskEntity.getDescription())) {
+            existingTaskEntity.setDescription(taskRequestDTO.getDescription());
         }
-        if (updatedTaskEntity.getStatus() != null) {
-            existingTaskEntity.setStatus(updatedTaskEntity.getStatus());
+        if (taskRequestDTO.getStatus() != null) {
+            existingTaskEntity.setStatus(taskRequestDTO.getStatus());
         }
-        if (updatedTaskEntity.getPriority() != null) {
-            existingTaskEntity.setPriority(updatedTaskEntity.getPriority());
+        if (taskRequestDTO.getPriority() != null) {
+            existingTaskEntity.setPriority(taskRequestDTO.getPriority());
         }
-        if (updatedTaskEntity.getExecutor() != null) {
-            existingTaskEntity.setExecutor(updatedTaskEntity.getExecutor());
+        if (taskRequestDTO.getExecutor() != null) {
+            existingTaskEntity.setExecutor(taskRequestDTO.getExecutor());
         }
         // Добавлять поля к изменению — сюда
-        return taskRepository.saveAndFlush(existingTaskEntity);
+        taskRepository.saveAndFlush(existingTaskEntity);
+        return taskMapper.toResponseDTO(existingTaskEntity);
     }
 
     // Универсальный Update-метод на случай, если пользователю позволят изменять другие поля
-    public TaskEntity updateTaskPropertyByUser(long id, Consumer<TaskEntity> updater) throws TaskNotFoundException {
+    public TaskResponseDTO updateTaskPropertyByUser(long id, Consumer<TaskEntity> updater) throws TaskNotFoundException {
         TaskEntity taskEntityForUpdating = taskRepository.findById(id).orElseThrow(() -> new TaskNotFoundException("Задача не найдена."));
         updater.accept(taskEntityForUpdating);
-        return taskRepository.saveAndFlush(taskEntityForUpdating);
+        taskRepository.saveAndFlush(taskEntityForUpdating);
+        return taskMapper.toResponseDTO(taskEntityForUpdating);
     }
 
     // Смена статуса задачи пользователем
-    public TaskEntity updateTaskStatusByUser(long id, TaskStatus status) throws TaskNotFoundException {
+    public TaskResponseDTO updateTaskStatusByUser(long id, TaskStatus status) throws TaskNotFoundException {
         String email = SecurityContextHolder.getContext().getAuthentication().getName();
 
         UserEntity currentUser = userRepository.findByEmail(email);

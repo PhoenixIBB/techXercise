@@ -1,8 +1,11 @@
 package com.application.techXercise.services;
 
+import com.application.techXercise.dto.UserRequestDTO;
+import com.application.techXercise.dto.UserResponseDTO;
 import com.application.techXercise.entity.UserEntity;
 import com.application.techXercise.exceptions.UserNotFoundException;
 import com.application.techXercise.repositories.UserRepository;
+import com.application.techXercise.utils.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -10,60 +13,65 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
 public class UserManagementService {
 
-    private final PasswordEncoder passwordEncoder;
     private final UserRepository userRepository;
+    private final UserMapper userMapper;
 
-    public UserManagementService(PasswordEncoder passwordEncoder, UserRepository userRepository) {
-        this.passwordEncoder = passwordEncoder;
+    public UserManagementService(UserRepository userRepository, UserMapper userMapper) {
         this.userRepository = userRepository;
+        this.userMapper = userMapper;
     }
 
     // Создать пользователя
-    public UserEntity createUser(UserEntity userEntity) {
-        if (userRepository.findByEmail(userEntity.getEmail()) != null) {
+    public UserResponseDTO createUser(UserRequestDTO userRequestDTO) {
+        if (userRepository.findByEmail(userRequestDTO.getEmail()) != null) {
             throw new IllegalArgumentException("Пользователь с таким email уже существует!");
         }
-        return userRepository.saveAndFlush(userEntity);
+        UserEntity userEntity = userMapper.fromRequestDTO(userRequestDTO);
+        userRepository.saveAndFlush(userEntity);
+        return userMapper.toResponseDTO(userEntity);
     }
 
     // Получить всех пользователей
-    public List<UserEntity> getAllUsers() throws UserNotFoundException {
+    public List<UserResponseDTO> getAllUsers() throws UserNotFoundException {
         List<UserEntity> users = userRepository.findAll();
         if (users.isEmpty()) {
             throw new UserNotFoundException("Пользователи не найдены.");
         }
-        return users;
+        return users.stream()
+                .map(userMapper::toResponseDTO)
+                .collect(Collectors.toList());
     }
 
     // Получить пользователя по ID
-    public UserEntity getUserById(long id) throws UserNotFoundException {
-        return userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("Пользователь с таким id не найден!"));
+    public UserResponseDTO getUserById(long id) throws UserNotFoundException {
+        return userMapper.toResponseDTO(userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("Пользователь с таким id не найден!")));
     }
 
     // Получить пользователя по email
-    public UserEntity getUserByEmail(String email) {
-        return userRepository.findByEmail(email);
+    public UserResponseDTO getUserByEmail(String email) {
+        return userMapper.toResponseDTO(userRepository.findByEmail(email));
     }
 
     // Универсальный Update-метод
-    public UserEntity updateUserProperty(long id, Consumer<UserEntity> updater) throws UserNotFoundException {
+    public UserResponseDTO updateUserProperty(long id, Consumer<UserEntity> updater) throws UserNotFoundException {
         UserEntity userForUpdating = userRepository.findById(id).orElseThrow(() -> new UserNotFoundException("Пользователь не найден."));
         updater.accept(userForUpdating);
-        return userRepository.saveAndFlush(userForUpdating);
+        return userMapper.toResponseDTO(userRepository.saveAndFlush(userForUpdating));
     }
 
     // Сменить адрес почты
-    public UserEntity updateUserEmail(long id, String email) throws UserNotFoundException {
+    public UserResponseDTO updateUserEmail(long id, String email) throws UserNotFoundException {
         return updateUserProperty(id, user -> user.setEmail(email));
     }
 
     // Сменить пароль   (подумать над безопасностью и шифрованием)
-    public UserEntity updateUserPassword(long id, String rawPassword) throws UserNotFoundException {
+    public UserResponseDTO updateUserPassword(long id, String rawPassword) throws UserNotFoundException {
         return updateUserProperty(id, user -> user.setPassword(rawPassword));
     }
 

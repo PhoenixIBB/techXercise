@@ -1,7 +1,6 @@
 package com.application.techXercise.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,7 +16,7 @@ public class CommentEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private long id;
+    private Long id;
 
     @NotBlank(message = "Комментарий не может быть пустым")
     @Size(max = 1000, message = "Длина комментария не должна превышать 1000 символов")
@@ -49,42 +48,43 @@ public class CommentEntity {
     public CommentEntity() {
     }
 
-    public CommentEntity(String content, UserEntity commenter, TaskEntity commentedTaskEntity, LocalDate commentCreationDate) {
+    public CommentEntity(long id, String content, UserEntity commenter, TaskEntity commentedTaskEntity, LocalDate commentCreationDate) {
+        this.id = id;
         this.content = content;
         this.commenter = commenter;
         this.commentedTaskEntity = commentedTaskEntity;
         this.commentCreationDate = commentCreationDate;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getContent() {
+    public @NotBlank(message = "Комментарий не может быть пустым") @Size(max = 1000, message = "Длина комментария не должна превышать 1000 символов") String getContent() {
         return content;
     }
 
-    public void setContent(String content) {
+    public void setContent(@NotBlank(message = "Комментарий не может быть пустым") @Size(max = 1000, message = "Длина комментария не должна превышать 1000 символов") String content) {
         this.content = content;
     }
 
-    public UserEntity getCommenter() {
+    public @NotNull(message = "Невозможно создать комментарий без авторства") UserEntity getCommenter() {
         return commenter;
     }
 
-    public void setCommenter(UserEntity commenter) {
+    public void setCommenter(@NotNull(message = "Невозможно создать комментарий без авторства") UserEntity commenter) {
         this.commenter = commenter;
     }
 
-    public TaskEntity getCommentedTask() {
+    public @NotNull(message = "Комментарий не существует без задачи, к которой он был написан") TaskEntity getCommentedTaskEntity() {
         return commentedTaskEntity;
     }
 
-    public void setCommentedTask(TaskEntity commentedTaskEntity) {
+    public void setCommentedTaskEntity(@NotNull(message = "Комментарий не существует без задачи, к которой он был написан") TaskEntity commentedTaskEntity) {
         this.commentedTaskEntity = commentedTaskEntity;
     }
 
@@ -97,22 +97,11 @@ public class CommentEntity {
     }
 
     @Override
-    public String toString() {
-        return "Comment{" +
-                "commentCreationDate=" + commentCreationDate +
-                ", commentedTask=" + commentedTaskEntity +
-                ", commenter=" + commenter +
-                ", content='" + content + '\'' +
-                ", id=" + id +
-                '}';
-    }
-
-    @Override
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        CommentEntity commentEntity = (CommentEntity) o;
-        return id == commentEntity.id && Objects.equals(content, commentEntity.content) && Objects.equals(commenter, commentEntity.commenter) && Objects.equals(commentedTaskEntity, commentEntity.commentedTaskEntity) && Objects.equals(commentCreationDate, commentEntity.commentCreationDate);
+        CommentEntity that = (CommentEntity) o;
+        return id == that.id && Objects.equals(content, that.content) && Objects.equals(commenter, that.commenter) && Objects.equals(commentedTaskEntity, that.commentedTaskEntity) && Objects.equals(commentCreationDate, that.commentCreationDate);
     }
 
     @Override

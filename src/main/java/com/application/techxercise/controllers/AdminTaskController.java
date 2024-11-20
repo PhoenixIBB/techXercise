@@ -1,5 +1,7 @@
 package com.application.techXercise.controllers;
 
+import com.application.techXercise.dto.TaskRequestDTO;
+import com.application.techXercise.dto.TaskResponseDTO;
 import com.application.techXercise.entity.TaskEntity;
 import com.application.techXercise.exceptions.TaskNotFoundException;
 import com.application.techXercise.exceptions.UserNotFoundException;
@@ -28,48 +30,48 @@ public class AdminTaskController {
 
     // Эндпоинт создания задачи
     @PostMapping("/")
-    public ResponseEntity<TaskEntity> createTask(@Valid @RequestBody TaskEntity taskEntity) throws UserNotFoundException {
-        TaskEntity createdTaskEntity = taskService.createTask(taskEntity);
+    public ResponseEntity<TaskResponseDTO> createTask(@Valid @RequestBody TaskRequestDTO taskRequestDTO) throws UserNotFoundException {
+        TaskResponseDTO createdTaskEntity = taskService.createTask(taskRequestDTO);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdTaskEntity);
     }
 
     // Эндпоинт вывода всех задач
     @GetMapping("/tasks")
-    public ResponseEntity<List<TaskEntity>> showAllTasks() {
-        List<TaskEntity> taskEntities = taskService.getAllTasks();
+    public ResponseEntity<List<TaskResponseDTO>> showAllTasks() {
+        List<TaskResponseDTO> taskEntities = taskService.getAllTasks();
         return ResponseEntity.ok(taskEntities);
     }
 
     // Эндпоинт для вывода задач исполнителя
     @GetMapping("/by-executor/{executorId}")
-    public ResponseEntity<Page<TaskEntity>> getTasksByExecutor(
+    public ResponseEntity<Page<TaskResponseDTO>> getTasksByExecutor(
             @PathVariable Long executorId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) TaskStatus status,
             @RequestParam(required = false) TaskPriority priority) {
 
-        Page<TaskEntity> tasks = taskService.getTasksByExecutor(executorId, page, size, status, priority);
+        Page<TaskResponseDTO> tasks = taskService.getTasksByExecutor(executorId, page, size, status, priority);
         return ResponseEntity.ok(tasks);
     }
 
     // Эндпоинт для вывода задач автора
     @GetMapping("/by-author/{authorId}")
-    public ResponseEntity<Page<TaskEntity>> getTasksByAuthor(
+    public ResponseEntity<Page<TaskResponseDTO>> getTasksByAuthor(
             @PathVariable Long authorId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) TaskStatus status,
             @RequestParam(required = false) TaskPriority priority) {
 
-        Page<TaskEntity> tasks = taskService.getTasksByAuthor(authorId, page, size, status, priority);
+        Page<TaskResponseDTO> tasks = taskService.getTasksByAuthor(authorId, page, size, status, priority);
         return ResponseEntity.ok(tasks);
     }
 
     // Эндпоинт вывода конкретной задачи по ID
     @GetMapping("/tasks/{taskId}")
-    public ResponseEntity<TaskEntity> getTaskById(@PathVariable long taskId) throws TaskNotFoundException {
-        TaskEntity taskEntity = taskService.getTaskById(taskId);
+    public ResponseEntity<TaskResponseDTO> getTaskById(@PathVariable long taskId) throws TaskNotFoundException {
+        TaskResponseDTO taskEntity = taskService.getTaskById(taskId);
         return taskEntity != null ?
                 ResponseEntity.ok(taskEntity) :
                 ResponseEntity.notFound().build();
@@ -77,8 +79,8 @@ public class AdminTaskController {
 
     // Эндпоинт редактирования задачи
     @PutMapping("/")
-    public ResponseEntity<TaskEntity> updateTask(@Valid @RequestBody TaskEntity taskEntity) throws TaskNotFoundException {
-        return ResponseEntity.ok(taskService.updateTaskByAdmin(taskEntity));
+    public ResponseEntity<TaskResponseDTO> updateTask(@Valid @RequestBody TaskRequestDTO taskRequestDTO) throws TaskNotFoundException {
+        return ResponseEntity.ok(taskService.updateTaskByAdmin(taskRequestDTO));
     }
 
     // Эндпоинт удаления задачи

@@ -1,5 +1,7 @@
 package com.application.techXercise.controllers;
 
+import com.application.techXercise.dto.UserRequestDTO;
+import com.application.techXercise.dto.UserResponseDTO;
 import com.application.techXercise.entity.UserEntity;
 import com.application.techXercise.exceptions.UserNotFoundException;
 import com.application.techXercise.services.UserManagementService;
@@ -22,18 +24,18 @@ public class AdminUserManagementController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<UserEntity> createUser(@Valid @RequestBody UserEntity userEntity) {
-        return ResponseEntity.ok(userManagementService.createUser(userEntity));
+    public ResponseEntity<UserResponseDTO> createUser(@Valid @RequestBody UserRequestDTO userRequestDTO) {
+        return ResponseEntity.ok(userManagementService.createUser(userRequestDTO));
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<UserEntity>> getAllUsers() throws UserNotFoundException {
+    public ResponseEntity<List<UserResponseDTO>> getAllUsers() throws UserNotFoundException {
         return ResponseEntity.ok(userManagementService.getAllUsers());
     }
 
     @GetMapping("/{userId}")
-    public ResponseEntity<UserEntity> getUserById(@PathVariable long userId) throws UserNotFoundException {
-        UserEntity userEntity = userManagementService.getUserById(userId);
+    public ResponseEntity<UserResponseDTO> getUserById(@PathVariable long userId) throws UserNotFoundException {
+        UserResponseDTO userEntity = userManagementService.getUserById(userId);
         return userEntity != null ?
                 ResponseEntity.ok(userEntity) :
                 ResponseEntity.notFound().build();

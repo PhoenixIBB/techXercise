@@ -1,7 +1,6 @@
 package com.application.techXercise.entity;
 
 import com.application.techXercise.utils.Role;
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
@@ -12,7 +11,6 @@ import jakarta.validation.constraints.Size;
 import java.util.List;
 import java.util.Objects;
 
-
 @Entity
 @Table(name = "users")
 public class UserEntity {
@@ -20,7 +18,7 @@ public class UserEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private long id;
+    private Long id;
 
     @NotBlank(message = "Поле 'имя' не может быть пустым")
     @Size(max = 55, message = "Длина имени не должна превышать 55 символов")
@@ -65,10 +63,15 @@ public class UserEntity {
     @JsonManagedReference("commenterComments")
     private List<CommentEntity> commentsCreated;
 
+    public String getRolesString() {
+        return role != null ? role.toString() : "USER_ROLE";
+    }
+
     public UserEntity() {
     }
 
-    public UserEntity(String name, String surname, String email, String password, Role role, List<TaskEntity> tasksCreated, List<TaskEntity> tasksExecuted, List<CommentEntity> commentsCreated) {
+    public UserEntity(long id, String name, String surname, String email, String password, Role role, List<TaskEntity> tasksCreated, List<TaskEntity> tasksExecuted, List<CommentEntity> commentsCreated) {
+        this.id = id;
         this.name = name;
         this.surname = surname;
         this.email = email;
@@ -79,43 +82,47 @@ public class UserEntity {
         this.commentsCreated = commentsCreated;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getName() {
+    public @NotBlank(message = "Поле 'имя' не может быть пустым") @Size(max = 55, message = "Длина имени не должна превышать 55 символов") String getName() {
         return name;
     }
 
-    public void setName(String name) {
+    public void setName(@NotBlank(message = "Поле 'имя' не может быть пустым") @Size(max = 55, message = "Длина имени не должна превышать 55 символов") String name) {
         this.name = name;
     }
 
-    public String getSurname() {
+    public @NotBlank(message = "Поле 'фамилия' не может быть пустым") @Size(max = 55, message = "Длина фамилии не должна превышать 55 символов") String getSurname() {
         return surname;
     }
 
-    public void setSurname(String surname) {
+    public void setSurname(@NotBlank(message = "Поле 'фамилия' не может быть пустым") @Size(max = 55, message = "Длина фамилии не должна превышать 55 символов") String surname) {
         this.surname = surname;
     }
 
-    public String getEmail() {
+    public @NotBlank(message = "Поле 'email' не может быть пустым") @Size(max = 55, message = "Длина адреса электронной почты не должна превышать 55 символов") @Pattern(regexp = "^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+)\\.[a-zA-Z]{2,6}$",
+            message = "Неверный формат email") String getEmail() {
         return email;
     }
 
-    public void setEmail(String email) {
+    public void setEmail(@NotBlank(message = "Поле 'email' не может быть пустым") @Size(max = 55, message = "Длина адреса электронной почты не должна превышать 55 символов") @Pattern(regexp = "^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+)\\.[a-zA-Z]{2,6}$",
+            message = "Неверный формат email") String email) {
         this.email = email;
     }
 
-    public String getPassword() {
+    public @NotNull(message = "Пароль не может быть пустым") @Size(min = 8, message = "Пароль должен содержать минимум 8 символов") @Pattern(regexp = "(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,}",
+            message = "Пароль должен содержать хотя бы одну цифру, одну заглавную букву и один специальный символ") String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(@NotNull(message = "Пароль не может быть пустым") @Size(min = 8, message = "Пароль должен содержать минимум 8 символов") @Pattern(regexp = "(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,}",
+            message = "Пароль должен содержать хотя бы одну цифру, одну заглавную букву и один специальный символ") String password) {
         this.password = password;
     }
 
@@ -151,19 +158,18 @@ public class UserEntity {
         this.commentsCreated = commentsCreated;
     }
 
-    public String getRolesString() {
-        return role.toString();
-    }
-
     @Override
     public String toString() {
-        return "User{" +
-                "role=" + role +
-                ", password='" + password + '\'' +
-                ", email='" + email + '\'' +
-                ", surname='" + surname + '\'' +
+        return "UserEntity{" +
+                "id=" + id +
                 ", name='" + name + '\'' +
-                ", id=" + id +
+                ", surname='" + surname + '\'' +
+                ", email='" + email + '\'' +
+                ", password='" + password + '\'' +
+                ", role=" + role +
+                ", tasksCreated=" + tasksCreated +
+                ", tasksExecuted=" + tasksExecuted +
+                ", commentsCreated=" + commentsCreated +
                 '}';
     }
 
@@ -171,14 +177,13 @@ public class UserEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        UserEntity userEntity = (UserEntity) o;
-        return id == userEntity.id && Objects.equals(name, userEntity.name) && Objects.equals(surname, userEntity.surname) && Objects.equals(email, userEntity.email) && Objects.equals(password, userEntity.password) && Objects.equals(tasksCreated, userEntity.tasksCreated) && Objects.equals(tasksExecuted, userEntity.tasksExecuted) && Objects.equals(commentsCreated, userEntity.commentsCreated);
+        UserEntity that = (UserEntity) o;
+        return id == that.id && Objects.equals(name, that.name) && Objects.equals(surname, that.surname) && Objects.equals(email, that.email) && Objects.equals(password, that.password) && role == that.role && Objects.equals(tasksCreated, that.tasksCreated) && Objects.equals(tasksExecuted, that.tasksExecuted) && Objects.equals(commentsCreated, that.commentsCreated);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, name, surname, email, password, tasksCreated, tasksExecuted, commentsCreated);
+        return Objects.hash(id, name, surname, email, password, role, tasksCreated, tasksExecuted, commentsCreated);
     }
-
 }
 

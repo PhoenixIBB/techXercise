@@ -1,5 +1,6 @@
 package com.application.techXercise.controllers;
 
+import com.application.techXercise.dto.UserResponseDTO;
 import com.application.techXercise.entity.UserEntity;
 import com.application.techXercise.exceptions.UserNotFoundException;
 import com.application.techXercise.services.UserManagementService;
@@ -21,26 +22,26 @@ public class UserManagementController {
     }
 
     @PatchMapping("/email")
-    public ResponseEntity<UserEntity> updateEmail(@PathVariable long userId, @Valid @RequestParam String email) throws UserNotFoundException {
+    public ResponseEntity<UserResponseDTO> updateEmail(@PathVariable long userId, @Valid @RequestParam String email) throws UserNotFoundException {
         String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity currentUser = userManagementService.getUserByEmail(currentUserEmail);
+        UserResponseDTO currentUser = userManagementService.getUserByEmail(currentUserEmail);
         if (currentUser.getId() != userId) {
             throw new SecurityException("Вы не можете редактировать данные другого пользователя.");
         }
-        UserEntity userEntity = userManagementService.updateUserEmail(userId, email);
+        UserResponseDTO userEntity = userManagementService.updateUserEmail(userId, email);
         return userEntity != null ?
                 ResponseEntity.ok(userEntity) :
                 ResponseEntity.notFound().build();
     }
 
     @PatchMapping("/password")
-    public ResponseEntity<UserEntity> updatePassword(@PathVariable long userId, @Valid @RequestParam String password) throws UserNotFoundException {
+    public ResponseEntity<UserResponseDTO> updatePassword(@PathVariable long userId, @Valid @RequestParam String password) throws UserNotFoundException {
         String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
-        UserEntity currentUser = userManagementService.getUserByEmail(currentUserEmail);
+        UserResponseDTO currentUser = userManagementService.getUserByEmail(currentUserEmail);
         if (currentUser.getId() != userId) {
             throw new SecurityException("Вы не можете редактировать данные другого пользователя.");
         }
-        UserEntity userEntity = userManagementService.updateUserPassword(userId, password);
+        UserResponseDTO userEntity = userManagementService.updateUserPassword(userId, password);
         return userEntity != null ?
                 ResponseEntity.ok(userEntity) :
                 ResponseEntity.notFound().build();

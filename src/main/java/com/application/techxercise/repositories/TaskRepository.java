@@ -14,12 +14,12 @@ import java.util.List;
 @Repository
 public interface TaskRepository extends JpaRepository<TaskEntity, Long>, JpaSpecificationExecutor<TaskEntity> {
 
-    Page<TaskEntity> findByAuthorId(Long authorId, Pageable pageable);
-
-    Page<TaskEntity> findByExecutorId(Long executorId, Pageable pageable);
-
-    Page<TaskEntity> findByStatus(TaskStatus status, Pageable pageable);
-
-    Page<TaskEntity> findByPriority(TaskPriority priority, Pageable pageable);
+//    Page<TaskEntity> findByAuthorId(Long authorId, Pageable pageable);
+//
+//    Page<TaskEntity> findByExecutorId(Long executorId, Pageable pageable);
+//
+//    Page<TaskEntity> findByStatus(TaskStatus status, Pageable pageable);
+//
+//    Page<TaskEntity> findByPriority(TaskPriority priority, Pageable pageable);
 
 }

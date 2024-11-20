@@ -1,5 +1,6 @@
 package com.application.techXercise.controllers;
 
+import com.application.techXercise.dto.CommentResponseDTO;
 import com.application.techXercise.entity.CommentEntity;
 import com.application.techXercise.exceptions.CommentNotFoundException;
 import com.application.techXercise.exceptions.TaskNotFoundException;
@@ -28,8 +29,8 @@ public class UserCommentController {
 
     // Создать комментарий
     @PostMapping("/")
-    public ResponseEntity<CommentEntity> createComment(@PathVariable long taskId, @Valid @RequestBody String content) throws TaskNotFoundException, UserNotFoundException {
-        CommentEntity createdComment = commentService.createComment(taskId, content);
+    public ResponseEntity<CommentResponseDTO> createComment(@PathVariable long taskId, @Valid @RequestBody String content) throws UserNotFoundException {
+        CommentResponseDTO createdComment = commentService.createComment(taskId, content);
         return createdComment != null ?
                 ResponseEntity.ok(createdComment) :
                 ResponseEntity.notFound().build();
@@ -37,7 +38,7 @@ public class UserCommentController {
 
     // Получить комментарии пользователя
     @GetMapping("/")
-    public ResponseEntity<Page<CommentEntity>> getCommentsForTask(
+    public ResponseEntity<Page<CommentResponseDTO>> getCommentsForTask(
             @PathVariable Long taskId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -50,21 +51,21 @@ public class UserCommentController {
                 return ResponseEntity.badRequest().build();
             }
         }
-        Page<CommentEntity> comments = commentService.getCommentsForTask(taskId, parsedDate, page, size);
+        Page<CommentResponseDTO> comments = commentService.getCommentsForTask(taskId, parsedDate, page, size);
         return ResponseEntity.ok(comments);
     }
 
     // Редактировать комментарий
     @PatchMapping("/{commentId}")
-    public ResponseEntity<CommentEntity> updateCommentContent(@PathVariable long commentId
+    public ResponseEntity<CommentResponseDTO> updateCommentContent(@PathVariable long commentId
             , @Valid @RequestBody String commentContent) {
         String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
-            CommentEntity existingComment = commentService.getCommentById(commentId);
+            CommentResponseDTO existingComment = commentService.getCommentById(commentId);
             if (!existingComment.getCommenter().getEmail().equals(currentUserEmail)) {
                 return ResponseEntity.status(403).build();
             }
-            CommentEntity updatedCommentEntity = commentService.updateCommentContent(commentId, commentContent);
+            CommentResponseDTO updatedCommentEntity = commentService.updateCommentContent(commentId, commentContent);
             return ResponseEntity.ok(updatedCommentEntity);
         } catch (CommentNotFoundException e) {
             return ResponseEntity.notFound().build();
@@ -73,10 +74,10 @@ public class UserCommentController {
 
     // Удалить комментарий
     @DeleteMapping("/{commentId}")
-    public ResponseEntity<CommentEntity> deleteComment(@PathVariable long commentId) {
+    public ResponseEntity<CommentResponseDTO> deleteComment(@PathVariable long commentId) {
         String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
         try {
-            CommentEntity existingComment = commentService.getCommentById(commentId);
+            CommentResponseDTO existingComment = commentService.getCommentById(commentId);
             if (!existingComment.getCommenter().getEmail().equals(currentUserEmail)) {
                 return ResponseEntity.status(403).build();
             }

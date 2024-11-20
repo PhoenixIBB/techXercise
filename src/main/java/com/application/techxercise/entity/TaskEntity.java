@@ -19,7 +19,7 @@ public class TaskEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private long id;
+    private Long id;
 
     @NotBlank(message = "Название задачи не может быть пустым")
     @Size(max = 255, message = "Название задачи не должно превышать 255 символов")
@@ -55,66 +55,67 @@ public class TaskEntity {
     @OneToMany(mappedBy = "commentedTaskEntity"
             , cascade = CascadeType.ALL)
     @JsonManagedReference("taskComments")
-    private List<CommentEntity> commentEntities;
+    private List<CommentEntity> commentsCreated;
 
     public TaskEntity() {
     }
 
-    public TaskEntity(String title, String description, TaskStatus status, TaskPriority priority, UserEntity author, UserEntity executor, List<CommentEntity> commentEntities) {
+    public TaskEntity(long id, String title, String description, TaskStatus status, TaskPriority priority, UserEntity author, UserEntity executor, List<CommentEntity> commentsCreated) {
+        this.id = id;
         this.title = title;
         this.description = description;
         this.status = status;
         this.priority = priority;
         this.author = author;
         this.executor = executor;
-        this.commentEntities = commentEntities;
+        this.commentsCreated = commentsCreated;
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public String getTitle() {
+    public @NotBlank(message = "Название задачи не может быть пустым") @Size(max = 255, message = "Название задачи не должно превышать 255 символов") String getTitle() {
         return title;
     }
 
-    public void setTitle(String title) {
+    public void setTitle(@NotBlank(message = "Название задачи не может быть пустым") @Size(max = 255, message = "Название задачи не должно превышать 255 символов") String title) {
         this.title = title;
     }
 
-    public String getDescription() {
+    public @NotBlank(message = "Описание задачи не может быть пустым") @Size(max = 1000, message = "Описание задачи не должно превышать 1000 символов") String getDescription() {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(@NotBlank(message = "Описание задачи не может быть пустым") @Size(max = 1000, message = "Описание задачи не должно превышать 1000 символов") String description) {
         this.description = description;
     }
 
-    public TaskStatus getStatus() {
+    public @NotNull(message = "Статус задачи обязателен") TaskStatus getStatus() {
         return status;
     }
 
-    public void setStatus(TaskStatus status) {
+    public void setStatus(@NotNull(message = "Статус задачи обязателен") TaskStatus status) {
         this.status = status;
     }
 
-    public TaskPriority getPriority() {
+    public @NotNull(message = "Приоритет задачи обязателен") TaskPriority getPriority() {
         return priority;
     }
 
-    public void setPriority(TaskPriority priority) {
+    public void setPriority(@NotNull(message = "Приоритет задачи обязателен") TaskPriority priority) {
         this.priority = priority;
     }
 
-    public UserEntity getAuthor() {
+    public @NotNull(message = "Автор задачи обязателен") UserEntity getAuthor() {
         return author;
     }
 
-    public void setAuthor(UserEntity author) {
+    public void setAuthor(@NotNull(message = "Автор задачи обязателен") UserEntity author) {
         this.author = author;
     }
 
@@ -126,24 +127,25 @@ public class TaskEntity {
         this.executor = executor;
     }
 
-    public List<CommentEntity> getComments() {
-        return commentEntities;
+    public List<CommentEntity> getCommentsCreated() {
+        return commentsCreated;
     }
 
-    public void setComments(List<CommentEntity> commentEntities) {
-        this.commentEntities = commentEntities;
+    public void setCommentsCreated(List<CommentEntity> commentsCreated) {
+        this.commentsCreated = commentsCreated;
     }
 
     @Override
     public String toString() {
-        return "Task{" +
-                "executor=" + executor +
-                ", author=" + author +
-                ", priority=" + priority +
-                ", status=" + status +
-                ", description='" + description + '\'' +
+        return "TaskEntity{" +
+                "id=" + id +
                 ", title='" + title + '\'' +
-                ", id=" + id +
+                ", description='" + description + '\'' +
+                ", status=" + status +
+                ", priority=" + priority +
+                ", author=" + author +
+                ", executor=" + executor +
+                ", commentsCreated=" + commentsCreated +
                 '}';
     }
 
@@ -151,12 +153,12 @@ public class TaskEntity {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-        TaskEntity taskEntity = (TaskEntity) o;
-        return id == taskEntity.id && Objects.equals(title, taskEntity.title) && Objects.equals(description, taskEntity.description) && status == taskEntity.status && priority == taskEntity.priority && Objects.equals(author, taskEntity.author) && Objects.equals(executor, taskEntity.executor) && Objects.equals(commentEntities, taskEntity.commentEntities);
+        TaskEntity that = (TaskEntity) o;
+        return id == that.id && Objects.equals(title, that.title) && Objects.equals(description, that.description) && status == that.status && priority == that.priority && Objects.equals(author, that.author) && Objects.equals(executor, that.executor) && Objects.equals(commentsCreated, that.commentsCreated);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(id, title, description, status, priority, author, executor, commentEntities);
+        return Objects.hash(id, title, description, status, priority, author, executor, commentsCreated);
     }
 }

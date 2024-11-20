@@ -15,6 +15,7 @@ public interface CommentRepository extends JpaRepository<CommentEntity, Long> {
 
     Page<CommentEntity> findByCommenterId(long commenterId, Pageable pageable);
 
+    // Я нормальный, честно, просто нужно сделать хоть какую-то фильтрацию, а я не успеваю :)
     Page<CommentEntity> findByCommentedTaskEntityIdAndCommentCreationDateAfter(Long taskEntityId, LocalDate commentCreationDate, Pageable pageable);
 
 }
