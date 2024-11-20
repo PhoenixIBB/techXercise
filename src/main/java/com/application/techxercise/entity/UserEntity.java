@@ -4,6 +4,10 @@ import com.application.techXercise.utils.Role;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Pattern;
+import jakarta.validation.constraints.Size;
 
 import java.util.List;
 import java.util.Objects;
@@ -18,15 +22,27 @@ public class UserEntity {
     @Column(name = "id")
     private long id;
 
+    @NotBlank(message = "Поле 'имя' не может быть пустым")
+    @Size(max = 55, message = "Длина имени не должна превышать 55 символов")
     @Column(name = "name")
     private String name;
 
+    @NotBlank(message = "Поле 'фамилия' не может быть пустым")
+    @Size(max = 55, message = "Длина фамилии не должна превышать 55 символов")
     @Column(name = "surname")
     private String surname;
 
+    @NotBlank(message = "Поле 'email' не может быть пустым")
+    @Size(max = 55, message = "Длина адреса электронной почты не должна превышать 55 символов")
+    @Pattern(regexp = "^[A-Za-z0-9+_.-]+@([A-Za-z0-9.-]+)\\.[a-zA-Z]{2,6}$",
+            message = "Неверный формат email")
     @Column(name = "email")
     private String email;
 
+    @NotNull(message = "Пароль не может быть пустым")
+    @Size(min = 8, message = "Пароль должен содержать минимум 8 символов")
+    @Pattern(regexp = "(?=.*[0-9])(?=.*[A-Z])(?=.*[!@#$%^&*(),.?\":{}|<>]).{8,}",
+            message = "Пароль должен содержать хотя бы одну цифру, одну заглавную букву и один специальный символ")
     @Column(name = "password")
     private String password;
 
