@@ -60,7 +60,7 @@ public class TaskEntity {
     public TaskEntity() {
     }
 
-    public TaskEntity(long id, String title, String description, TaskStatus status, TaskPriority priority, UserEntity author, UserEntity executor, List<CommentEntity> commentsCreated) {
+    public TaskEntity(Long id, String title, String description, TaskStatus status, TaskPriority priority, UserEntity author, UserEntity executor, List<CommentEntity> commentsCreated) {
         this.id = id;
         this.title = title;
         this.description = description;

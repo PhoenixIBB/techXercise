@@ -69,9 +69,16 @@ public class UserEntity {
 
     public UserEntity() {
     }
-
-    public UserEntity(long id, String name, String surname, String email, String password, Role role, List<TaskEntity> tasksCreated, List<TaskEntity> tasksExecuted, List<CommentEntity> commentsCreated) {
+    public UserEntity(Long id, String name, String surname, String email, String password, Role role) {
         this.id = id;
+        this.name = name;
+        this.surname = surname;
+        this.email = email;
+        this.password = password;
+        this.role = role;
+    }
+
+    public UserEntity(String name, String surname, String email, String password, Role role, List<TaskEntity> tasksCreated, List<TaskEntity> tasksExecuted, List<CommentEntity> commentsCreated) {
         this.name = name;
         this.surname = surname;
         this.email = email;

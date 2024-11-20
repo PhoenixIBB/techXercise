@@ -48,8 +48,7 @@ public class CommentEntity {
     public CommentEntity() {
     }
 
-    public CommentEntity(long id, String content, UserEntity commenter, TaskEntity commentedTaskEntity, LocalDate commentCreationDate) {
-        this.id = id;
+    public CommentEntity(String content, UserEntity commenter, TaskEntity commentedTaskEntity, LocalDate commentCreationDate) {
         this.content = content;
         this.commenter = commenter;
         this.commentedTaskEntity = commentedTaskEntity;

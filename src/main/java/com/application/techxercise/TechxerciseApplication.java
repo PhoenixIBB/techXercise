@@ -4,13 +4,11 @@ import com.application.techXercise.entity.UserEntity;
 import com.application.techXercise.repositories.CommentRepository;
 import com.application.techXercise.repositories.TaskRepository;
 import com.application.techXercise.repositories.UserRepository;
-import com.application.techXercise.utils.Role;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @SpringBootApplication

@@ -15,6 +15,10 @@ public class PagedResponseDTO<T> {
     public PagedResponseDTO() {
     }
 
+    public PagedResponseDTO(List<T> content) {
+        this.content = content;
+    }
+
     public PagedResponseDTO(List<T> content, int pageNumber, int pageSize, long totalElements, int totalPages, boolean last) {
         this.content = content;
         this.pageNumber = pageNumber;

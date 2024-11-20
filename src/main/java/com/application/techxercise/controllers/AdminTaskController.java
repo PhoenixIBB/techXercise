@@ -88,7 +88,7 @@ public class AdminTaskController {
     public ResponseEntity<String> deleteTask(@PathVariable long taskId) throws TaskNotFoundException {
         boolean isDeleted = taskService.deleteTask(taskId);
         return isDeleted ?
-                ResponseEntity.ok("Задача удалена успешно.") :
+                ResponseEntity.ok("Zadacha udalena uspeshno.") :
                 ResponseEntity.notFound().build();
     }
 
