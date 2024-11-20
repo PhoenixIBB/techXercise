@@ -1,6 +1,7 @@
 package com.application.techXercise.services;
 
 import com.application.techXercise.dto.CommentResponseDTO;
+import com.application.techXercise.dto.PagedResponseDTO;
 import com.application.techXercise.entity.CommentEntity;
 import com.application.techXercise.entity.TaskEntity;
 import com.application.techXercise.entity.UserEntity;
@@ -59,10 +60,20 @@ public class CommentService {
     }
 
     // Получить комментарии к задаче
-    public Page<CommentResponseDTO> getCommentsForTask(Long taskId, LocalDate commentCreationDate, int page, int size) {
+    public PagedResponseDTO<CommentResponseDTO> getCommentsForTask(Long taskId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<CommentEntity> comments = commentRepository.findByCommentedTaskEntityIdAndCommentCreationDateAfter(taskId, commentCreationDate, pageable);
-        return comments.map(commentMapper::toResponseDTO);
+        Page<CommentEntity> comments = commentRepository.findByCommentedTaskEntityId(taskId, pageable);
+        List<CommentResponseDTO> commentResponseDTOs = comments.getContent().stream()
+                .map(commentMapper::toResponseDTO)
+                .collect(Collectors.toList());
+        return new PagedResponseDTO<>(
+                commentResponseDTOs,
+                comments.getNumber(),
+                comments.getSize(),
+                comments.getTotalElements(),
+                comments.getTotalPages(),
+                comments.isLast()
+        );
     }
 
     // Получить все комментарии пользователя

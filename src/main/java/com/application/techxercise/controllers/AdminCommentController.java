@@ -1,6 +1,7 @@
 package com.application.techXercise.controllers;
 
 import com.application.techXercise.dto.CommentResponseDTO;
+import com.application.techXercise.dto.PagedResponseDTO;
 import com.application.techXercise.entity.CommentEntity;
 import com.application.techXercise.exceptions.CommentNotFoundException;
 import com.application.techXercise.exceptions.TaskNotFoundException;
@@ -37,22 +38,12 @@ public class AdminCommentController {
 
     // Получить все комментарии к задаче
     @GetMapping("/")
-    public ResponseEntity<Page<CommentResponseDTO>> getCommentsForTask(
+    public ResponseEntity<PagedResponseDTO<CommentResponseDTO>> getCommentsForTask(
             @PathVariable Long taskId,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(required = false) String date) {
+            @RequestParam(defaultValue = "10") int size) {
 
-        LocalDate parsedDate = null;
-        if (date != null) {
-            try {
-                parsedDate = LocalDate.parse(date);
-            } catch (Exception e) {
-                return ResponseEntity.badRequest().build();
-            }
-        }
-
-        Page<CommentResponseDTO> comments = commentService.getCommentsForTask(taskId, parsedDate, page, size);
+        PagedResponseDTO<CommentResponseDTO> comments = commentService.getCommentsForTask(taskId, page, size);
         return ResponseEntity.ok(comments);
     }
 
