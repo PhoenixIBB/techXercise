@@ -3,7 +3,7 @@ services:
     image: mysql
     restart: "no"
     ports:
-      - "3307:3306"
+      - "3306:3306"
     volumes:
       - C:\Users\gilma\mysql:/var/lib/mysql
     environment:
