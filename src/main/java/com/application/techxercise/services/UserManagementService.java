@@ -21,10 +21,12 @@ public class UserManagementService {
 
     private final UserRepository userRepository;
     private final UserMapper userMapper;
+    private final PasswordEncoder passwordEncoder;
 
-    public UserManagementService(UserRepository userRepository, UserMapper userMapper) {
+    public UserManagementService(UserRepository userRepository, UserMapper userMapper, PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userMapper = userMapper;
+        this.passwordEncoder = passwordEncoder;
     }
 
     // Создать пользователя
@@ -32,6 +34,7 @@ public class UserManagementService {
         if (userRepository.findByEmail(userRequestDTO.getEmail()) != null) {
             throw new IllegalArgumentException("Пользователь с таким email уже существует!");
         }
+        userRequestDTO.setPassword(passwordEncoder.encode(userRequestDTO.getPassword()));
         UserEntity userEntity = userMapper.fromRequestDTO(userRequestDTO);
         userRepository.saveAndFlush(userEntity);
         return userMapper.toResponseDTO(userEntity);
@@ -71,12 +74,19 @@ public class UserManagementService {
     }
 
     // Сменить пароль   (подумать над безопасностью и шифрованием)
-    public UserResponseDTO updateUserPassword(long id, String rawPassword) throws UserNotFoundException {
-        return updateUserProperty(id, user -> user.setPassword(rawPassword));
+    public UserResponseDTO updateUserPassword(long userId, String newPassword) throws UserNotFoundException {
+        UserEntity userEntity = userRepository.findById(userId)
+                .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
+        String encodedPassword = passwordEncoder.encode(newPassword);
+
+        userEntity.setPassword(encodedPassword);
+        userRepository.saveAndFlush(userEntity);
+
+        return userMapper.toResponseDTO(userEntity);
     }
 
     // Удалить пользователя
-    public boolean deleteUser(long id) throws UserNotFoundException {
+    public boolean deleteUser(long id) {
         if (!userRepository.existsById(id)) {
             return false;
         }

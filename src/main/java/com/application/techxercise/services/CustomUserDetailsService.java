@@ -17,19 +17,28 @@ public class CustomUserDetailsService implements UserDetailsService {
     private PasswordEncoder passwordEncoder;
 
     @Autowired
-    public CustomUserDetailsService(UserRepository userRepository) { this.userRepository = userRepository; }
+    public CustomUserDetailsService(UserRepository userRepository, PasswordEncoder passwordEncoder) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Autowired
-    public void setPasswordEncoder(PasswordEncoder passwordEncoder) { this.passwordEncoder = passwordEncoder; }
+    public void setPasswordEncoder(PasswordEncoder passwordEncoder) {
+        this.passwordEncoder = passwordEncoder;
+    }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
 
         UserEntity userEntity = userRepository.findByEmail(email);
 
+        if (userEntity == null) {
+            throw new UsernameNotFoundException("Пользователь не найден.");
+        }
+
         return User.builder()
                 .username(userEntity.getEmail())
-                .password(passwordEncoder.encode((userEntity.getPassword())))
+                .password(userEntity.getPassword())
                 .roles(userEntity.getRolesString())
                 .build();
     }
