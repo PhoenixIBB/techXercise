@@ -57,8 +57,12 @@ public class UserManagementService {
     }
 
     // Получить пользователя по email
-    public UserResponseDTO getUserByEmail(String email) {
-        return userMapper.toResponseDTO(userRepository.findByEmail(email));
+    public UserResponseDTO getUserByEmail(String email) throws UserNotFoundException {
+        UserEntity user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new UserNotFoundException("Пользователь с таким email не найден.");
+        }
+        return userMapper.toResponseDTO(user);
     }
 
     // Универсальный Update-метод
@@ -74,12 +78,11 @@ public class UserManagementService {
     }
 
     // Сменить пароль   (подумать над безопасностью и шифрованием)
-    public UserResponseDTO updateUserPassword(long userId, String newPassword) throws UserNotFoundException {
+    public UserResponseDTO updateUserPassword(long userId, String password) throws UserNotFoundException {
         UserEntity userEntity = userRepository.findById(userId)
                 .orElseThrow(() -> new UserNotFoundException("Пользователь не найден"));
-        String encodedPassword = passwordEncoder.encode(newPassword);
 
-        userEntity.setPassword(encodedPassword);
+        userEntity.setPassword(passwordEncoder.encode(password));
         userRepository.saveAndFlush(userEntity);
 
         return userMapper.toResponseDTO(userEntity);

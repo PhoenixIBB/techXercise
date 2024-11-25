@@ -5,6 +5,8 @@ import com.application.techXercise.entity.UserEntity;
 import com.application.techXercise.exceptions.UserNotFoundException;
 import com.application.techXercise.services.UserManagementService;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 public class UserManagementController {
 
     UserManagementService userManagementService;
+    private static final Logger logger = LoggerFactory.getLogger(UserManagementController.class);
 
     @Autowired
     public UserManagementController(UserManagementService userManagementService) {
@@ -37,6 +40,7 @@ public class UserManagementController {
     @PatchMapping("/password")
     public ResponseEntity<UserResponseDTO> updatePassword(@PathVariable long userId, @Valid @RequestParam String password) throws UserNotFoundException {
         String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        logger.info("Current user email: {}", currentUserEmail);
         UserResponseDTO currentUser = userManagementService.getUserByEmail(currentUserEmail);
         if (currentUser.getId() != userId) {
             throw new SecurityException("Вы не можете редактировать данные другого пользователя.");
